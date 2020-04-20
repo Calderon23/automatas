@@ -1,0 +1,320 @@
+PARSER_BEGIN(comp)
+package Comp;
+import java.io.*;
+class comp 
+{
+	static String nombre;
+	static String tipo;
+	static String atributo;
+	static String valor;
+	static String posicion;
+	static Simbolo s = new Simbolo();
+	public static void main( String[] args )throws ParseException, Exception
+	{
+		try{
+			Ventana ven = new Ventana("Compilador");	
+		}catch(Exception e){
+			Ventana.t2.setText(e.getMessage());
+		}
+		
+		
+	}
+}
+PARSER_END(comp)
+
+
+
+TOKEN:
+{
+	<Mayor: ">">//1
+	| <Menor : "<" >//2
+	| <MayorIgual:">=">//3
+	| <MenorIgual:"<="> //4
+	| <Comparacion: "==" >//5
+	| <Diferente: "!=" >//6
+	| <Asignacion: "=" >//7
+	| <Mas : "+" >//8
+	| <Menos:"-">//9
+    | <ParAP: "(" >//10
+	| <ParCi: ")" > //11
+	| <Izq: "{" >//12
+	| <Der: "}" > //13
+	| <SEMICOLON: ";" >//14
+	| <PUBLIC: "public">//15
+	| <clase: "class">//16
+	| <PRIVATE: "private"> //17	
+	| <Bool : ("true"|"false")> //22
+	| <integer : "int"> //20
+	| <Dou : "double"> //28
+	| <St : "String"> //29
+	| <Ch : "char"> //30
+	| <If : "if"> //21
+	| <Boolean : "boolean"> //22
+	| <Int : (["0"-"9"])+>//23
+	| <UNKNOWN : ((("'"|"\"")(["a"-"z","A"-"Z","_","0"-"9"])+)|((["a"-"z","A"-"Z","_","0"-"9"])+)("'"|"\""))|("/"|"*") > //24
+	| <IDENTIFIER : (["a"-"z","A"-"Z","_","0"-"9"])+ > //24
+	| <Char : "'"["a"-"z","A"-"Z","0"-"9"]"'" >//52 
+	| <String : ["\""]["a"-"z","A"-"Z","0"-"9"," "](["a"-"z","A"-"Z","0"-"9"," ",":",";","."])*["\""]> //51
+	| <Double : (["0"-"9"])+["."](["0"-"9"])+ > //50	
+	
+
+}
+
+SKIP : 
+{ 
+	" "|"\n" | "\r" | "\r\n" | "\t"
+}
+void Programa() :
+{
+	
+}
+{	
+	modifi()
+	<clase>
+	<IDENTIFIER>	
+	<Izq>		
+	(field_declaration())*
+	(if_statement()	)*
+	<Der>	
+}
+void modifi() :
+{}
+{
+(<PUBLIC>|<PRIVATE>	)		
+}
+void field_declaration():
+{}
+{
+	variable_declaration()
+	
+}
+void variable_declaration():
+{	
+}
+{
+	modifi()
+	({atributo=token.image;})
+	((<Boolean>
+	({tipo=token.image;})
+	identi()
+	({nombre=token.image;
+	s=Ventana.buscar(nombre);	
+	})
+	(<SEMICOLON>
+	({valor="undefined";})
+	|(<Asignacion> 
+	<Bool>
+	({valor=token.image;})
+	<SEMICOLON>	
+
+
+	))
+
+	)
+	|(<integer>
+	({tipo=token.image;})
+	identi()
+	({nombre=token.image;
+	s=Ventana.buscar(nombre);	
+	})
+	(<SEMICOLON>
+	({valor="undefined";})
+	|(<Asignacion> 
+	<Int>
+	({valor=token.image;})
+	<SEMICOLON>	
+
+
+	))
+
+
+	)|(<Dou>
+	({tipo=token.image;})
+	identi()
+	({nombre=token.image;
+	s=Ventana.buscar(nombre);	
+	})
+	(<SEMICOLON>
+	({valor="undefined";})
+	|(<Asignacion> 
+	<Double>	
+	({valor=token.image;})
+	<SEMICOLON>	
+
+
+	))
+
+
+
+	)|(<St>
+	({tipo=token.image;})
+	identi()
+	({nombre=token.image;
+	s=Ventana.buscar(nombre);	
+	})
+	(<SEMICOLON>
+	({valor="undefined";})
+	|(<Asignacion> 
+	<String>
+	({valor=token.image;})
+	<SEMICOLON>	
+
+
+	))
+
+
+
+
+
+
+	)|(<Ch>
+	({tipo=token.image;})
+	identi()
+	({nombre=token.image;
+	s=Ventana.buscar(nombre);	
+	})
+	(<SEMICOLON>
+	({valor="undefined";})
+	|(<Asignacion> 
+	(<Char>)
+	({valor=token.image;})
+	<SEMICOLON>	
+
+
+	))
+
+
+	))
+	
+
+
+
+
+
+
+	({
+	String g=s.getPosicion();		
+	Simbolo n  = new Simbolo(nombre,tipo,atributo,valor,g);})
+	({
+	String pos=Ventana.buscarDuplicados(nombre);
+	if(Ventana.repetido){
+		Ventana.repetido=false;
+		Ventana.dup = "\n\n\n\nerror: variable "+nombre +" is already defined at "+pos+",\n"+"the first declaration was at "+g;
+	}
+		Ventana.tabla.put(nombre,n);
+		
+	
+	
+	})			
+}
+void type():
+{}
+{	
+	type_specifier()					
+}
+
+
+void expression():
+{}
+{
+	testing_expression()
+	
+}
+void testing_expression():
+{}
+{
+	or()
+	(<Mayor>|<Menor>|<MenorIgual>|<MayorIgual>|<Comparacion>|<Diferente>)
+	or()	
+}
+void or():
+{}
+{		
+	(<Int>|identi())
+}
+void type_specifier():
+{}
+{		
+	(<Boolean>|<integer>|<Dou>|<St>|<Ch>)
+}
+void if_statement():
+{}
+{	
+		<If>		
+		<ParAP>	
+	expression()	
+		<ParCi>	
+	statement()	 
+}
+void statement():
+{}
+{
+	 statement_block()
+	
+}
+void statement_block():
+{}
+{
+	
+		 <Izq>	
+		(aritmetica_expression())*
+		 <Der>
+	
+	 
+}
+void aritmetica_expression():
+{}
+{	
+		identi()
+		({			
+			if(!Ventana.tabla.containsKey(token.image)){	
+				Simbolo k = new Simbolo();
+				k=Ventana.buscarNoDec(token.image);
+				Ventana.noDeclarada +="error: variable  "+token.image+" at "+k.getPosicion()+" was not declarated\n";
+			}
+		})
+		<Asignacion>
+		opint()
+		<SEMICOLON>			 
+}
+void identi():
+{}
+{	
+	<IDENTIFIER>	
+			 		 
+}
+void opint():
+{}
+{
+		(<Int>|identi()
+		({			
+			if(!Ventana.tabla.containsKey(token.image)){			
+				Simbolo k = new Simbolo();
+				k=Ventana.buscarNoDecNum(token.image);
+				Ventana.noDeclarada +="error: variable  "+token.image+" at "+k.getPosicion()+" was not declarated\n";				
+			}
+		})
+		)
+		
+		(<Mas>|<Menos>)
+		(<Int>|identi()
+		({			
+			if(!Ventana.tabla.containsKey(token.image)){				
+				Simbolo k = new Simbolo();
+				k=Ventana.buscarNoDecNumD(token.image);
+				Ventana.noDeclarada +="error: variable  "+token.image+" at "+k.getPosicion()+" was not declarated\n";
+			}
+		})
+		)
+
+}
+void asignation():
+{}
+{		
+	identi()
+	<Asignacion>
+	(<Int>|<Bool>)
+	<SEMICOLON>	
+}
+
+
