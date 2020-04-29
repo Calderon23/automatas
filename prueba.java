@@ -1,4 +1,4 @@
-public class Ejemplo{
+public class prueba{
 
         private int cont=3;
         public String y="hola";
